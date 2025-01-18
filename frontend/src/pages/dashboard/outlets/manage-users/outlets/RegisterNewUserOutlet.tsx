@@ -1,0 +1,17 @@
+import AdminRegisterNewUserForm from '../../../../../components/forms/AdminRegisterNewUserForm';
+
+function RegisterNewUserOutlet() {
+	return (
+		<div className="flex flex-col gap-4">
+			<div className="flex flex-row justify-between">
+				<span className="text-4xl font-medium text-gray-800">Register new user</span>
+			</div>
+
+			<div className="col-span-3 flex flex-col gap-4 bg-white rounded-2xl px-10 py-7 shadow">
+				<AdminRegisterNewUserForm />
+			</div>
+		</div>
+	);
+}
+
+export default RegisterNewUserOutlet;

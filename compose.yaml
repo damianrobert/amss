@@ -1,0 +1,57 @@
+services:
+  unibuc-iot-mintegration-db:
+    container_name: unibuc-iot-mintegration-db
+    image: postgres:11.1-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=iot-db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d iot-db -U postgres"]
+      interval: 10s
+      timeout: 1s
+      retries: 5
+    command: postgres -c 'shared_buffers=256MB' -c 'max_connections=600' -c 'log_min_duration_statement=200'
+    ports:
+      - "5432:5432"
+
+  unibuc-iot-mintegration-db-liquidbase-migrations:
+    container_name: unibuc-iot-mintegration-db-liquidbase-migrations
+    image: liquibase/liquibase:latest-alpine
+    environment:
+      - DB_HOST=unibuc-iot-mintegration-db
+      - DB_PORT=5432
+      - DB_NAME=iot-db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+    depends_on:
+      unibuc-iot-mintegration-db:
+        condition: service_healthy
+    build:
+      context: ./backend/src/infrastructure/data-access/db/
+
+  unibuc-iot-mintegration-be:
+    container_name: unibuc-iot-mintegration-be
+    depends_on:
+      unibuc-iot-mintegration-db:
+        condition: service_healthy
+    environment:
+      - DB_HOST=unibuc-iot-mintegration-db
+      - DB_PORT=5432
+      - DB_NAME=iot-db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - PORT=80
+    build:
+      context: ./backend
+    ports:
+      - "8080:80"
+
+  unibuc-iot-mintegration-fe:
+    container_name: unibuc-iot-mintegration-fe
+    environment:
+      - PORT=80
+    build:
+      context: ./frontend
+    ports:
+      - "6060:80"
